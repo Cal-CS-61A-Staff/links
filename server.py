@@ -30,17 +30,19 @@ def base():
 
 @app.route("/_refresh/")
 def refresh():
-    csv_lines = requests.get(os.getenv('DB_URL')).text.split("\n")
+    csv_lines = []
+    for url in os.getenv('DB_URL').split(','):
+        csv_lines += requests.get(os.getenv('DB_URL')).text.split("\n")
     csvr = list(csv.reader(csv_lines, delimiter=',', quotechar='"'))
     headers = [x.lower() for x in csvr[0]]
-    links.clear()
-    author.clear()
+    new_links, new_author = {}, {}
     for row in csvr[1:]:
         shortlink = row[headers.index('shortlink')]
         url = row[headers.index('url')]
         creator = row[headers.index('creator')]
-        links[shortlink] = url
-        author[shortlink] = creator
+        new_links[shortlink] = url
+        new_author[shortlink] = creator
+    links = new_links, author = new_author
     return 'Links updated'
 
 if __name__ == "__main__":
