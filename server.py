@@ -1,7 +1,17 @@
-from flask import Flask, redirect
+from flask import Flask, redirect, request
 import requests
 import csv
 import os
+
+try:
+    import urlparse  # Python 2
+except ImportError:
+    import urllib.parse as urlparse  # Python 3
+
+def add_url_params(url, params_string):
+    parse_result = list(urlparse.urlsplit(url))
+    parse_result[3] = "&".join(filter(lambda s: s, [parse_result[3], params_string]))
+    return urlparse.urlunsplit(tuple(parse_result))
 
 app = Flask(__name__)
 
@@ -12,7 +22,7 @@ def handler(path):
     if not links:
         refresh()
     if path in links:
-        return redirect(links[path])
+        return redirect(add_url_params(links[path], request.query_string))
     return base()
 
 @app.route('/preview/<path>/')
