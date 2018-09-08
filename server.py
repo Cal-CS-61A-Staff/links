@@ -10,7 +10,7 @@ except ImportError:
 
 def add_url_params(url, params_string):
     parse_result = list(urlparse.urlsplit(url))
-    parse_result[3] = "&".join(filter(lambda s: s, [parse_result[3], params_string]))
+    parse_result[3] = "&".join(list(map(str, filter(lambda s: s, [parse_result[3], params_string]))))
     return urlparse.urlunsplit(tuple(parse_result))
 
 app = Flask(__name__)
@@ -31,7 +31,7 @@ def preview(path):
         refresh()
     if path not in links:
         return 'No such link exists.'
-    return 'Points to <a href="{0}">{0}</a> by {1}'.format(links[path], author[path])
+    return 'Points to <a href="{0}">{0}</a> by {1}'.format(add_url_params(links[path], request.query_string), author[path])
 
 @app.route("/")
 def base():
